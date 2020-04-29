@@ -22,6 +22,20 @@ echo_blue,echo_err,logout_fileandterminal
 ```
 is_cmd_ok,is_dir_exist,del_dir_file
 ```
+ - android_imei
+```
+获取的是15位随机数
+```
+ - progress_bar
+```
+使用方法：progress_bar 20 100
+配合for循环的调用方式
+number=100
+for (( i = 0; i < $number; i++ )); do {
+	progress_bar $i $number
+	}
+done
+```
 
 ### 更新日志
   - 2020年04月29日10:55:28 新增函数

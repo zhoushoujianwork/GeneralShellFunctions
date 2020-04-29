@@ -44,8 +44,9 @@ echo_err(){
 logout_fileandterminal(){
 	#输出日志同时在日志文件和输出终端中
 	if [[ -z $LOGOUT ]]; then
-		echo "还未定义输出日志文件，请先在shell中指定LOGOUT变量！"
-		exit 3333
+		echo "还未定义输出日志文件，请先在shell中指定LOGOUT变量！本次使用默认log文件~/generalshellfunctions.log，若要修改，请定义LOGOUT变量。"
+		# exit 3333
+		LOGOUT=~/generalshellfunctions.log
 	fi
 	if [[ -z $1 ]]; then
 		OUT="NULL (调用logout_file_terminal未指定日志内容)"

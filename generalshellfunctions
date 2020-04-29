@@ -102,4 +102,39 @@ is_dir_exist(){
     fi
 }
 
+android_imei(){
+	#该函数用于自动构建安卓15位IMEI系列号；
+	for (( i = 0; i < 3; i++ )); do
+		number=$RANDOM
+		if [[ $number -lt 10000  && $number -gt 1000 ]];then
+			number="0"$number
+		elif [[ $number -lt 1000 && $number -gt 100 ]];then
+			number="00"$number
+		elif [[ $number -lt 100 && $number -gt 10 ]];then
+			number="000"$number
+		elif [[ $number -lt 10 && $number -gt 1 ]];then
+			number="0000"$number
+		fi	
+	 	_Android_Imei=$_Android_Imei$number
+	done
+	echo  $_Android_Imei
+}
+
+progress_bar(){
+	#精度条功能，需要2个参数，第一个是现在个数，第二个是总数；
+	_ParametersNumber=$#
+	judge_parameters 2
+	judge_parameters_num $1
+	judge_parameters_num $2
+	local current=$1; local total=$2
+	local now=$((current*100/total))
+	# let number be EVEN
+	[[ $((now % 2)) -eq 1 ]]&&let now++
+	# show #######
+	local str=$(for i in `seq 1 $((now/2))`; do printf '#'; done)
+		printf "\r %s [%-50s]%d%%" "Loading" "$str"  $now;
+		sleep 0.2;
+		str+='#';
+		# echo
+}
 

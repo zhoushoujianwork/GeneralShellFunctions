@@ -1,0 +1,72 @@
+#!/bin/bash
+#定义 exit 3333 缺少变量退出
+#定义 exit 3334 调用函数缺少参数退出
+DATE_FILE=`date +%Y%m%d_%H%M%S`
+DATE_Format=`date +%Y-%m-%d`
+
+
+
+#~~~~~~~~~~~~~~~~~~~~echo 函数改造~~~~~~~~~~~~~~~~~~~~
+echo_blue(){
+	#绿字无底色
+	echo -e "\033[32m $1 \033[0m"
+}
+
+echo_err(){
+	#白字红底输出
+	echo -e "\033[41;37m $1 \033[0m"
+	exit 2
+}
+
+logout_fileandterminal(){
+	#输出日志同时在日志文件和输出终端中
+	if [[ -z $LOGOUT ]]; then
+		echo "还未定义输出日志文件，请先在shell中指定LOGOUT变量！"
+		exit 3333
+	fi
+	if [[ -z $1 ]]; then
+		OUT="NULL (调用logout_file_terminal未指定日志内容)"
+	else
+		OUT=$1
+	fi
+	is_dir_exist $LOGOUT
+	echo "`date +%Y/%m/%d_%H:%M:%S` $OUT" | tee -a $LOGOUT
+}
+
+#~~~~~~~~~~~~~~~~~~~~基础函数~~~~~~~~~~~~~~~~~~~~
+is_cmd_ok(){
+	#判断上一个命令是否执行成功；
+    if [ $? == 0 ];then
+        echo "`date +%Y/%m/%d_%H:%M:%S` CMD is OK."|tee -a $LOGOUT
+    else
+        echo "`date +%Y/%m/%d_%H:%M:%S` CMD is faild!"|tee -a $LOGOUT
+        exit 3
+    fi
+}
+
+is_dir_exist(){
+	#判断目录是否存在，不存在创建，存在跳过；
+    if [ ! -f $1 ];
+    then
+        mkdir -p `dirname $1`
+        if [ $? == 0 ];then
+            echo "`date +%Y/%m/%d_%H:%M:%S` mkdir $Backup_PATH/$server_name OK."|tee -a $LOGOUT
+        else
+            echo "`date +%Y/%m/%d_%H:%M:%S` mkdir $Backup_PATH/$server_name Faild!"|tee -a $LOGOUT
+            exit 3
+        fi
+    fi
+}
+
+
+#~~~~~~~~~~~~~~~~~~~~删除函数~~~~~~~~~~~~~~~~~~~~
+del_dir_file(){
+	#删除超过七天的备份;第一个参数是备份文件所在目录;第二个参数是文件保留天数
+	if [[ -z $1 ]]; then
+		logout_fileandterminal "请先指定del_dir_file函数的目录"
+		exit 3334
+	fi
+
+    find $1 -mtime +$2 -type f | xargs rm -f
+#     find $1 -mtime +0 -type f -name *.tar.gz 
+}

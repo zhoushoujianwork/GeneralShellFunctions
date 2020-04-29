@@ -1,8 +1,31 @@
 #!/bin/bash
 #定义 exit 3333 缺少变量退出
 #定义 exit 3334 调用函数缺少参数退出
-DATE_FILE=`date +%Y%m%d_%H%M%S`
-DATE_Format=`date +%Y-%m-%d`
+
+
+
+### 构建函数定义规则
+#1.函数名称定义规则，单词，连接使用短下划线_。示例：is_cmd_ok；
+#2.函数内定义的变量规则：以短下划线_开头，单词使用大写连接，不使用下划线连接。示例：_ParametersNumber；
+#3.函数内必须添加 _ParametersNumber=$# 用于向下传递判断函数引用参数正确性；
+#4.日志输出格式：“2020/04/29_16:06:27 [INFO] [CMD] del_dir_file_date /var/log 10”；
+#5.日志输出种类：时间+[日志级别]+[CMD]+函数执行命令；
+
+
+#实例
+del_dir_file_date(){
+	#删除超过n天的文件，非目录;第一个参数是备份文件所在目录;第二个参数是文件保留天数
+	_ParametersNumber=$#
+	logout_fileandterminal "[INFO] [CMD] $FUNCNAME $1 $2"
+	judge_parameters 2
+	judge_parameters_dir $1
+	judge_parameters_num $2
+
+    find $1 -mtime +$2 -type f |tee -a $LOGOUT|xargs rm -f
+}
+
+# DATE_FILE=`date +%Y%m%d_%H%M%S`
+# DATE_Format=`date +%Y-%m-%d`
 
 
 
@@ -44,6 +67,31 @@ is_cmd_ok(){
     fi
 }
 
+judge_parameters(){
+	#引用该函数时需要定义_ParametersNumber参数。
+	#判断函数参数,使用方式：judge_parameters 参数个数
+	if [[ $_ParametersNumber -ne $1 ]]; then
+		logout_fileandterminal "[ERROR] ${FUNCNAME[1]} 函数参数错误，需要的参数是：$1 个"
+		exit 3334
+	fi 
+}
+judge_parameters_dir(){
+	#判断参数是否为目录
+	if [[ ! -d $1 ]]; then
+		logout_fileandterminal "[ERROR] ${FUNCNAME[1]} 传入的参数{$1}是不存在的目录！"
+		exit 3334
+	fi
+}
+judge_parameters_num(){
+	#判断参数是否为数字
+	if [[ $1 -gt 0 ]]; then
+		echo 
+	else
+		logout_fileandterminal "[ERROR] ${FUNCNAME[1]} 传入的参数{$1}不是数字！"
+		exit 3334
+	fi
+}
+
 is_dir_exist(){
 	#判断目录是否存在，不存在创建，存在跳过；
     if [ ! -f $1 ];
@@ -59,14 +107,3 @@ is_dir_exist(){
 }
 
 
-#~~~~~~~~~~~~~~~~~~~~删除函数~~~~~~~~~~~~~~~~~~~~
-del_dir_file(){
-	#删除超过七天的备份;第一个参数是备份文件所在目录;第二个参数是文件保留天数
-	if [[ -z $1 ]]; then
-		logout_fileandterminal "请先指定del_dir_file函数的目录"
-		exit 3334
-	fi
-
-    find $1 -mtime +$2 -type f | xargs rm -f
-#     find $1 -mtime +0 -type f -name *.tar.gz 
-}
